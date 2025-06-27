@@ -1,75 +1,169 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import SwipeTab from '@/components/ui/swipeTab';
+import { useEffect, useState } from 'react';
+
+
+type WeekDay = {
+  day: string;
+  date: Date;
+  isToday: boolean;
+};
+
 
 export default function HomeScreen() {
+  const [calendar, setCalendar] = useState<{
+    month: string;
+    year: number;
+    weekDays: WeekDay[];
+  }>({
+    month: '',
+    year: 0,
+    weekDays: [],
+  });
+
+  // calender fucntions
+  function getCurrentMonthYear() {
+    const now = new Date();
+    return {
+      month: now.toLocaleString('default', { month: 'long' }),
+      year: now.getFullYear(),
+    };
+  }
+
+  function getCurrentWeekDays(): WeekDay[] {
+    const today = new Date();
+    const start = new Date(today);
+    const currentDay = today.getDay();
+    start.setDate(today.getDate() - currentDay);
+
+    const days: WeekDay[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+
+      days.push({
+        day: date.toLocaleString('default', { weekday: 'short' }),
+        date,
+        isToday: date.toDateString() === new Date().toDateString(),
+      });
+    }
+
+    return days;
+  }
+
+  useEffect(() => {
+    const { month, year } = getCurrentMonthYear();
+    const weekDays = getCurrentWeekDays();
+
+    setCalendar({ month, year, weekDays });
+  }, []);
+
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <ParallaxScrollView>
+      <View style={styles.topTab}>
+        <TouchableOpacity>
+          <ThemedView style={styles.profile} lightColor='#dde4fc'>
+            <ThemedText style={styles.profileText} type="defaultSemiBold" lightColor='#4563EA' >BA</ThemedText>
+          </ThemedView>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <ThemedView style={styles.addButton} lightColor='#eeeef1'>
+            <IconSymbol name='plus' size={26} color={''} />
+          </ThemedView>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.calenderView}>
+        <ThemedText style={styles.yearText} type='defaultSemiBold' lightColor='#a1a4b3' >
+          {calendar.month} {calendar.weekDays.find(day => day.isToday)?.date.getDate()}, {calendar.year}
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+        <ThemedText style={styles.reminderText} type='defaultSemiBold' >
+          Today  reminders
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
+        <View style={styles.weekDaysView}>
+          {calendar.weekDays.map((day) => (
+            <View key={day.date.toDateString()} style={styles.daysView}>
+              <ThemedText type='default' lightColor='#a1a4b3' style={styles.daysText}>
+                {day.day}
+              </ThemedText>
+              <ThemedView style={styles.dateView} lightColor={day.isToday ? '#4563EA' : ''}>
+                <ThemedText style={styles.dateText} type='defaultSemiBold' lightColor={day.isToday ? '#ffffff' : '#000'}>
+                  {day.date.getDate()}
+                </ThemedText>
+              </ThemedView>
+            </View>
+          ))}
+        </View>
+      </View>
+      <SwipeTab/>
     </ParallaxScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  topTab: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 16,
+    paddingHorizontal: 16,
+
+  },
+  profile: {
+    borderRadius: 999,
+    width: 45,
+    height: 45,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  profileText: {
+    fontSize: 17,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  addButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  calenderView: {
+    marginTop: 32,
+    paddingHorizontal: 16,
+  },
+  yearText: {
+    fontSize: 20,
+  },
+  reminderText: {
+    fontSize: 28,
+    paddingTop: 12,
+  },
+  weekDaysView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    marginTop: 16,
+  },
+  daysView: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+  },
+  daysText: {
+    fontSize: 20,
+    fontWeight: '500',
+  },
+  dateView: {
+    marginTop: 12,
+    padding: 10,
+    borderRadius: 10,
+  },
+  dateText: {
+    fontSize: 20,
+  }
 });

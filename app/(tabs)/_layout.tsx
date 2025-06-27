@@ -20,7 +20,8 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
+            paddingTop: 8,
+            height: 90,
             position: 'absolute',
           },
           default: {},
@@ -30,7 +31,15 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="note.text.badge.plus" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+
+        name="calender"
+        options={{
+          title: 'Calendar',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -40,6 +49,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="medicines"
+        options={{
+          title: 'Medicines',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="bandage.fill" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
+
+
